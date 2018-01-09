@@ -1,11 +1,11 @@
 function GetDefaultValue(rowTable)
-    defaultLine = rowTable[1]
+    local defaultLine = rowTable[1]
     local matchBeginIndex = 1
     local matchLastIndex = 1
     local strBeginIndex = 1
 
     local i = 1
-    value = {}
+    local value = {}
 
     while true do     
         matchBeginIndex,matchLastIndex = string.find(defaultLine,'\t',strBeginIndex)
@@ -29,9 +29,11 @@ function GetDefaultValue(rowTable)
     return value[i-1]  
 end
 
+mt = {}                 -- 全局处理 后面复制为一个局部变量
+
 function ToSetTableAsDefault(rowTable,defaultValue)
     -- set mt as default
-    mt = {}
+    
     for i,v in ipairs(rowTable) do 
         mt[i] = {}
         for j=1,4 do 
@@ -120,10 +122,10 @@ function checkContent(rowTable)
     local count = GetCountOfRow(rowTable)
     for i=1,count do
         for j=1,1 do 
-            if mt[i][3] < 0 or mt[i][4] < 0 then 
+            if rowTable[i][3] < 0 or rowTable[i][4] < 0 then 
                 -- print(string.format("%s line:%d is error,the price is less than 0",os.date("%c"),i))
                 file:write(string.format("%s line:%d is error,the price is less than 0\n",os.date("%c"),i))
-            elseif mt[i][3] < mt[i][4] then 
+            elseif rowTable[i][3] < rowTable[i][4] then 
                 -- print(string.format("%s line:%d is error,npc is error",os.date("%c"),i))
                 file:write(string.format("%s line:%d is error,npc is error\n",os.date("%c"),i))
             end           
@@ -133,14 +135,17 @@ function checkContent(rowTable)
 end
 
 
-function main()
-    TableOfRow = CsvToRow("./data/my.tab")             -- table只是一个一维的table
-    defaultValue = GetDefaultValue(TableOfRow)
+function LoadFileToTable(filename)
+    local TableOfRow = CsvToRow("./data/my.tab")             -- table只是一个一维的table
+    local defaultValue = GetDefaultValue(TableOfRow)
     ToSetTableAsDefault(TableOfRow,defaultValue)       -- 定义数组，并且将值设置为default，mt这个矩阵
     CsvToTable(TableOfRow)
-    
-    
-    checkContent(TableOfRow)
+    return mt
+end
+
+function main()
+    local rowTable = LoadFileToTable("./data/my.tab")
+    checkContent(rowTable)
     -- ShowDetailTable(TableOfRow)
 end
     
@@ -149,5 +154,7 @@ main()
 
 
 -- 修改 文件格式          √
+-- loadFileFromTab       √
 -- 日志添加时间           √   
 -- 从文件中获得defalue值  √
+-- 脱离公共变量           √
